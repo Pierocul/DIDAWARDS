@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- SEO Meta Tags -->
+  <title>Juegos DID Awards 2025 - Bug Runner | Universidad del Desarrollo</title>
+  <meta name="description" content="Juega Bug Runner en DID Awards 2025. Ayuda a Chubi a evitar bugs y compite en el leaderboard. Juego interactivo Universidad del Desarrollo.">
+  <meta name="keywords" content="DID Awards juegos, Bug Runner, Chubi, Universidad del Desarrollo, juego interactivo, leaderboard, UDD">
+  <meta name="author" content="DID Awards - Universidad del Desarrollo">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://didawards.udd.cl/games.html">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://didawards.udd.cl/games.html">
+  <meta property="og:title" content="Juegos DID Awards 2025 - Bug Runner">
+  <meta property="og:description" content="Juega Bug Runner en DID Awards 2025. Ayuda a Chubi a evitar bugs y compite en el leaderboard.">
+  <meta property="og:image" content="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/didawardspost.png?alt=media&token=fd890fa1-ad9e-457f-b0ce-5da6f50aa715">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Juegos DID Awards 2025 - Bug Runner">
+  <meta name="twitter:description" content="Juega Bug Runner en DID Awards 2025. Ayuda a Chubi a evitar bugs y compite en el leaderboard.">
+  
+  <!-- Preconnect for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firebasestorage.googleapis.com">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="img/DID_NEGATIVO.png">
+  <link rel="shortcut icon" type="image/png" href="img/DID_NEGATIVO.png">
+  <link rel="apple-touch-icon" href="img/DID_NEGATIVO.png">
+  
+  <!-- Fonts and Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Configuración -->
+  <script src="config.js"></script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    window.firebaseModules = { initializeApp, getFirestore, collection, addDoc, getDocs, query, orderBy, limit };
+  </script>
+  
+  <style>
+    #leaderboard {
+      max-width: 600px;
+      margin: 40px auto;
+    }
+    
+    .leaderboard-entry {
+      background: linear-gradient(135deg, rgba(221,221,254,0.08) 0%, rgba(147,9,61,0.08) 100%);
+      border: 2px solid rgba(221,221,254,0.15);
+      border-radius: 12px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .leaderboard-entry:hover {
+      border-color: var(--accent-medium);
+      transform: translateX(5px);
+    }
+    
+    .leaderboard-rank {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent-medium);
+      font-family: 'Fira Code', monospace;
+      min-width: 50px;
+    }
+    
+    .leaderboard-name {
+      flex: 1;
+      font-size: 1.1rem;
+      color: #fff;
+      font-family: 'Fira Code', monospace;
+    }
+    
+    .leaderboard-score {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      font-family: 'Fira Code', monospace;
+    }
+    
+    #name-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      backdrop-filter: blur(10px);
+    }
+    
+    #name-modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary-medium) 100%);
+      border: 2px solid var(--accent-medium);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+    }
+    
+    .modal-content h2 {
+      color: var(--accent-medium);
+      margin-bottom: 20px;
+      font-family: 'Fira Code', monospace;
+    }
+    
+    .modal-content input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid rgba(221,221,254,0.3);
+      border-radius: 12px;
+      background: rgba(221,221,254,0.1);
+      color: #fff;
+      font-size: 1.1rem;
+      font-family: 'Fira Code', monospace;
+      margin-bottom: 20px;
+    }
+    
+    .modal-content input:focus {
+      outline: none;
+      border-color: var(--accent-medium);
+    }
+    
+    /* Responsive para leaderboard */
+    @media (max-width: 768px) {
+      #leaderboard {
+        margin: 30px auto;
+        padding: 0 20px;
+      }
+      
+      .leaderboard-entry {
+        padding: 12px 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+      }
+      
+      .leaderboard-rank {
+        font-size: 1.3rem;
+        min-width: auto;
+      }
+      
+      .leaderboard-name {
+        font-size: 1rem;
+      }
+      
+      .leaderboard-score {
+        font-size: 1.1rem;
+      }
+      
+      .modal-content {
+        padding: 30px 20px;
+        margin: 20px;
+      }
+      
+      .modal-content h2 {
+        font-size: 1.5rem;
+      }
+      
+      .modal-content input {
+        padding: 12px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body data-page="games">
+  <nav class="main-navbar">
+    <div class="navbar-brand">DID AWARDS</div>
+    <ul class="nav-menu">
+      <li><a href="index.html">inicio</a></li>
+      <!-- <li><a href="nominados.html">nominados</a></li> -->
+      <li><a href="info.html">información</a></li>
+      <li class="active"><a href="games.html">juegos</a></li>
+    </ul>
+  </nav>
+
+  <section class="page-section">
+    <div class="content">
+      <div class="section-header">
+        <h2>arcade.play()</h2>
+        <p>¡Diviértete mientras esperas el evento!</p>
+      </div>
+
+      <div id="game-container">
+        <div class="game-instructions">
+          <h3><span class="material-icons" style="vertical-align: middle; font-size: 1.8rem;">sports_esports</span> Bug Runner - ¡Ayuda a Chubi!</h3>
+          <p><span class="material-icons" style="vertical-align: middle;">keyboard</span> Presiona <strong>ESPACIO</strong> o <strong>CLICK</strong> para saltar</p>
+          <p><span class="material-icons" style="vertical-align: middle;">bug_report</span> Evita los bugs y consigue el mejor puntaje</p>
+        </div>
+        
+        <div class="game-info">
+          <div class="info-box">
+            <label>Puntaje</label>
+            <span id="score-display">0</span>
+          </div>
+          <div class="info-box">
+            <label>Mejor</label>
+            <span id="high-score-display">0</span>
+          </div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div class="game-controls">
+          <button class="btn" id="start-btn" onclick="BugRunner.start()">
+            <span class="material-icons" style="vertical-align: middle;">play_arrow</span>
+            // JUGAR
+          </button>
+          <button class="btn btn-secondary" id="restart-btn" onclick="BugRunner.restart()" style="display:none;">
+            <span class="material-icons" style="vertical-align: middle;">refresh</span>
+            // REINTENTAR
+          </button>
+          <button class="btn btn-secondary" id="music-btn" onclick="BugRunner.toggleMusic()">
+            <span class="material-icons" id="music-icon" style="vertical-align: middle;">volume_up</span>
+            // MÚSICA
+          </button>
+        </div>
+      </div>
+
+      <div id="leaderboard">
+        <h3 style="text-align:center; color:var(--accent-medium); font-family:'Fira Code',monospace; font-size:2rem; margin-bottom:30px;">
+          <span class="material-icons" style="vertical-align: middle; font-size: 2rem;">emoji_events</span> Top 10 Jugadores
+        </h3>
+        <div id="leaderboard-list">
+          <div class="loading" style="text-align:center;">
+            <div class="spinner"></div>
+            <p>Cargando leaderboard...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Audio de fondo -->
+  <audio id="background-music" loop>
+    <source src="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/DID%20Awards%20EPICO.mp3?alt=media&token=853b957e-527f-4073-8456-725a08d05e68" type="audio/mpeg">
+    Tu navegador no soporta el elemento de audio.
+  </audio>
+
+  <!-- Modal para nombre -->
+  <div id="name-modal">
+    <div class="modal-content">
+      <h2><span class="material-icons" style="vertical-align: middle; font-size: 2rem;">celebration</span> ¡Nuevo Récord!</h2>
+      <p style="color:rgba(255,255,255,0.8); margin-bottom:20px; font-size:1.2rem;">
+        Puntaje: <strong id="final-score" style="color:var(--accent-medium); font-size:1.5rem;">0</strong>
+      </p>
+      <input type="text" id="player-name" placeholder="Tu nombre" maxlength="20">
+      <button class="btn" onclick="BugRunner.saveScore()">
+        Guardar en Leaderboard
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const BugRunner = (() => {
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      
+      let db = null;
+      let gameRunning = false;
+      let score = 0;
+      let highScore = 0;
+      let gameSpeed = 4;
+      let gravity = 0.6;
+      let musicEnabled = false;
+      let backgroundMusic = null;
+      let isLandscape = false;
+      
+      // Mascota
+      const mascot = {
+        x: 100,
+        y: canvas.height - 80,
+        width: 60,
+        height: 60,
+        dy: 0,
+        jumpPower: -13,
+        grounded: true,
+        image: new Image()
+      };
+      
+      mascot.image.src = 'img/mascotalado.png';
+      
+      // Bugs
+      let bugs = [];
+      const bugImage = new Image();
+      bugImage.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y="80" font-size="80">🐛</text></svg>';
+      
+      // Suelo (se actualiza dinámicamente)
+      let ground = canvas.height - 20;
+      
+      function init() {
+        // Detectar rendimiento del dispositivo
+        detectPerformance();
+        
+        // Cargar high score de localStorage
+        highScore = parseInt(localStorage.getItem('bugRunnerHighScore')) || 0;
+        document.getElementById('high-score-display').textContent = highScore;
+        
+        // Cargar estado de música
+        musicEnabled = localStorage.getItem('bugRunnerMusic') === 'true';
+        backgroundMusic = document.getElementById('background-music');
+        updateMusicButton();
+        
+        // Configurar canvas responsivo básico
+        setupResponsiveCanvas();
+        
+        // Inicializar Firebase (solo si no está en modo rendimiento)
+        if (!performanceMode) {
+          try {
+            const config = window.DID_CONFIG?.firebase;
+            if (config) {
+              const app = window.firebaseModules.initializeApp(config);
+              db = window.firebaseModules.getFirestore(app);
+              loadLeaderboard();
+            }
+          } catch (error) {
+            console.error('Error inicializando Firebase:', error);
+          }
+        }
+        
+        // Controles
+        document.addEventListener('keydown', (e) => {
+          if (e.code === 'Space') {
+            e.preventDefault();
+            if (gameRunning) {
+              jump();
+            } else {
+              // Si el juego no está corriendo, reiniciar
+              restart();
+            }
+          }
+        });
+        
+        canvas.addEventListener('click', () => {
+          if (gameRunning) jump();
+        });
+        
+        // Detectar cambios de tamaño
+        window.addEventListener('resize', () => {
+          setupResponsiveCanvas();
+        });
+        
+        // Detectar cuando la página pierde foco (pausar juego)
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden && gameRunning) {
+            gameRunning = false;
+            console.log('Juego pausado por cambio de pestaña');
+          }
+        });
+      }
+      
+      function setupResponsiveCanvas() {
+        const isMobile = window.innerWidth <= 768;
+        const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        
+        if (isMobile) {
+          // Móvil - canvas más pequeño pero fijo
+          const maxWidth = Math.min(window.innerWidth - 30, 350);
+          const maxHeight = 250;
+          canvas.width = maxWidth;
+          canvas.height = maxHeight;
+          canvas.style.width = maxWidth + 'px';
+          canvas.style.height = maxHeight + 'px';
+          
+          // Ajustar posición de la mascota
+          mascot.x = 80;
+          mascot.y = canvas.height - 80;
+        } else if (isFullscreen) {
+          // Pantalla completa - canvas más grande pero limitado
+          const maxWidth = Math.min(window.innerWidth - 100, 1200);
+          const maxHeight = Math.min(window.innerHeight - 200, 600);
+          canvas.width = maxWidth;
+          canvas.height = maxHeight;
+          canvas.style.width = maxWidth + 'px';
+          canvas.style.height = maxHeight + 'px';
+          
+          // Ajustar posición de la mascota
+          mascot.x = 120;
+          mascot.y = canvas.height - 100;
+        } else {
+          // Desktop normal - canvas estándar
+          canvas.width = 800;
+          canvas.height = 400;
+          canvas.style.width = '800px';
+          canvas.style.height = '400px';
+          
+          // Ajustar posición de la mascota
+          mascot.x = 100;
+          mascot.y = canvas.height - 80;
+        }
+        
+        // Actualizar suelo
+        ground = canvas.height - 20;
+        
+        // Redibujar si el juego está corriendo
+        if (gameRunning) {
+          draw();
+        }
+      }
+      
+      
+      function jump() {
+        if (mascot.grounded) {
+          mascot.dy = mascot.jumpPower;
+          mascot.grounded = false;
+        }
+      }
+      
+      function start() {
+        if (gameRunning) return;
+        
+        gameRunning = true;
+        score = 0;
+        gameSpeed = 4;
+        bugs = [];
+        mascot.y = ground - mascot.height;
+        mascot.dy = 0;
+        mascot.grounded = true;
+        
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('restart-btn').style.display = 'none';
+        document.getElementById('score-display').textContent = '0';
+        
+        // Iniciar música si está habilitada
+        if (musicEnabled && backgroundMusic) {
+          backgroundMusic.play().catch(e => console.log('No se pudo reproducir música:', e));
+        }
+        
+        gameLoop();
+      }
+      
+      function restart() {
+        // Limpiar bugs existentes
+        bugs = [];
+        
+        // Resetear variables del juego
+        score = 0;
+        gameSpeed = 4;
+        mascot.y = ground - mascot.height;
+        mascot.dy = 0;
+        mascot.grounded = true;
+        
+        // Ocultar botones
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('restart-btn').style.display = 'none';
+        
+        // Limpiar canvas
+        ctx.fillStyle = '#0a0520';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Reiniciar juego
+        start();
+      }
+      
+      let lastTime = 0;
+      const targetFPS = 60;
+      const frameTime = 1000 / targetFPS;
+      let frameCount = 0;
+      let performanceMode = false;
+      
+      // Detectar rendimiento del dispositivo
+      function detectPerformance() {
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const start = performance.now();
+        
+        // Test de rendimiento
+        for (let i = 0; i < 1000; i++) {
+          ctx.fillRect(0, 0, 10, 10);
+        }
+        
+        const end = performance.now();
+        const time = end - start;
+        
+        // Si es lento, activar modo rendimiento
+        if (time > 50) {
+          performanceMode = true;
+          console.log('Modo rendimiento activado');
+        }
+      }
+      
+      function gameLoop(currentTime = 0) {
+        if (!gameRunning) return;
+        
+        const deltaTime = currentTime - lastTime;
+        frameCount++;
+        
+        // Limitar FPS para estabilidad
+        if (deltaTime >= frameTime) {
+          update();
+          draw();
+          lastTime = currentTime;
+        }
+        
+        // Reducir carga cada 60 frames en modo rendimiento
+        if (performanceMode && frameCount % 60 === 0) {
+          setTimeout(() => requestAnimationFrame(gameLoop), 1);
+        } else {
+          requestAnimationFrame(gameLoop);
+        }
+      }
+      
+      function update() {
+        // Incrementar score (solo cada 2 frames en modo rendimiento)
+        if (!performanceMode || frameCount % 2 === 0) {
+          score++;
+          // Solo actualizar DOM cada 10 frames para reducir carga
+          if (frameCount % 10 === 0) {
+            document.getElementById('score-display').textContent = Math.floor(score / 10);
+          }
+        }
+        
+        // Aumentar velocidad gradualmente (más lento y menos frecuente)
+        if (score % 1200 === 0) {
+          gameSpeed += 0.2;
+        }
+        
+        // Gravedad y movimiento de la mascota
+        mascot.dy += gravity;
+        mascot.y += mascot.dy;
+        
+        // Mantener en el suelo
+        if (mascot.y >= ground - mascot.height) {
+          mascot.y = ground - mascot.height;
+          mascot.dy = 0;
+          mascot.grounded = true;
+        }
+        
+        // Generar bugs (menos frecuentes y con límite)
+        const bugSpawnRate = performanceMode ? 0.008 : 0.012;
+        if (Math.random() < bugSpawnRate && bugs.length < 5) {
+          bugs.push({
+            x: canvas.width,
+            y: ground - 40,
+            width: 40,
+            height: 40
+          });
+        }
+        
+        // Mover bugs (optimizado)
+        for (let i = bugs.length - 1; i >= 0; i--) {
+          const bug = bugs[i];
+          bug.x -= gameSpeed;
+          
+          // Eliminar bugs fuera de pantalla
+          if (bug.x + bug.width < 0) {
+            bugs.splice(i, 1);
+            continue;
+          }
+          
+          // Detectar colisión (solo si está cerca)
+          if (Math.abs(bug.x - mascot.x) < 100 && checkCollision(mascot, bug)) {
+            gameOver();
+            return;
+          }
+        }
+      }
+      
+      function checkCollision(obj1, obj2) {
+        return obj1.x < obj2.x + obj2.width &&
+               obj1.x + obj1.width > obj2.x &&
+               obj1.y < obj2.y + obj2.height &&
+               obj1.y + obj1.height > obj2.y;
+      }
+      
+      function draw() {
+        // Limpiar canvas (optimizado)
+        ctx.fillStyle = '#0a0520';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Dibujar suelo (solo si no está en modo rendimiento)
+        if (!performanceMode) {
+          ctx.fillStyle = 'rgba(255, 103, 152, 0.3)';
+          ctx.fillRect(0, ground, canvas.width, canvas.height - ground);
+          
+          // Dibujar líneas del suelo (menos frecuentes)
+          if (frameCount % 3 === 0) {
+            ctx.strokeStyle = 'rgba(255, 103, 152, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < canvas.width; i += 50) {
+              ctx.moveTo(i - (score % 50), ground);
+              ctx.lineTo(i - (score % 50) + 30, ground);
+            }
+            ctx.stroke();
+          }
+        }
+        
+        // Dibujar mascota (optimizado)
+        if (mascot.image.complete) {
+          try {
+            ctx.drawImage(mascot.image, mascot.x, mascot.y, mascot.width, mascot.height);
+          } catch (e) {
+            ctx.fillStyle = '#ff6b98';
+            ctx.fillRect(mascot.x, mascot.y, mascot.width, mascot.height);
+          }
+        } else {
+          // Fallback simple
+          ctx.fillStyle = '#ff6b98';
+          ctx.fillRect(mascot.x, mascot.y, mascot.width, mascot.height);
+        }
+        
+        // Dibujar bugs (optimizado)
+        bugs.forEach(bug => {
+          if (performanceMode) {
+            // Modo rendimiento: solo rectángulos
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(bug.x, bug.y, bug.width, bug.height);
+          } else {
+            // Modo normal: con imagen
+            try {
+              ctx.drawImage(bugImage, bug.x, bug.y, bug.width, bug.height);
+            } catch (e) {
+              ctx.fillStyle = '#ff0000';
+              ctx.fillRect(bug.x, bug.y, bug.width, bug.height);
+            }
+          }
+        });
+      }
+      
+      function gameOver() {
+        gameRunning = false;
+        
+        const finalScore = Math.floor(score / 10);
+        
+        // Actualizar high score
+        if (finalScore > highScore) {
+          highScore = finalScore;
+          localStorage.setItem('bugRunnerHighScore', highScore);
+          document.getElementById('high-score-display').textContent = highScore;
+          
+          // Mostrar modal para nombre
+          document.getElementById('final-score').textContent = finalScore;
+          document.getElementById('name-modal').classList.add('active');
+        } else {
+          document.getElementById('restart-btn').style.display = 'inline-block';
+        }
+        
+        // Dibujar Game Over
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 48px "Fira Code"';
+        ctx.textAlign = 'center';
+        ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 30);
+        
+        ctx.font = '24px "Fira Code"';
+        ctx.fillStyle = 'var(--accent-medium)';
+        ctx.fillText(`Puntaje: ${finalScore}`, canvas.width / 2, canvas.height / 2 + 20);
+        
+        // Mensaje de reinicio
+        ctx.font = '18px "Fira Code"';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillText('Presiona ESPACIO para reiniciar', canvas.width / 2, canvas.height / 2 + 60);
+      }
+      
+      async function saveScore() {
+        const name = document.getElementById('player-name').value.trim();
+        
+        if (!name) {
+          alert('Por favor ingresa tu nombre');
+          return;
+        }
+        
+        if (!db) {
+          alert('No se pudo conectar a la base de datos');
+          document.getElementById('name-modal').classList.remove('active');
+          document.getElementById('restart-btn').style.display = 'inline-block';
+          return;
+        }
+        
+        try {
+          const finalScore = Math.floor(score / 10);
+          
+          await window.firebaseModules.addDoc(
+            window.firebaseModules.collection(db, 'bugruner_scores'),
+            {
+              name: name,
+              score: finalScore,
+              timestamp: new Date()
+            }
+          );
+          
+          document.getElementById('name-modal').classList.remove('active');
+          document.getElementById('player-name').value = '';
+          document.getElementById('restart-btn').style.display = 'inline-block';
+          
+          loadLeaderboard();
+          
+        } catch (error) {
+          console.error('Error guardando score:', error);
+          alert('Error guardando el puntaje');
+        }
+      }
+      
+      async function loadLeaderboard() {
+        if (!db) return;
+        
+        try {
+          const q = window.firebaseModules.query(
+            window.firebaseModules.collection(db, 'bugruner_scores'),
+            window.firebaseModules.orderBy('score', 'desc'),
+            window.firebaseModules.limit(10)
+          );
+          
+          const snapshot = await window.firebaseModules.getDocs(q);
+          const list = document.getElementById('leaderboard-list');
+          
+          if (snapshot.empty) {
+            list.innerHTML = '<p style="text-align:center; color:rgba(255,255,255,0.6);">¡Sé el primero en el leaderboard!</p>';
+            return;
+          }
+          
+          list.innerHTML = '';
+          let rank = 1;
+          
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const entry = document.createElement('div');
+            entry.className = 'leaderboard-entry';
+            entry.innerHTML = `
+              <div class="leaderboard-rank">#${rank}</div>
+              <div class="leaderboard-name">${data.name}</div>
+              <div class="leaderboard-score">${data.score}</div>
+            `;
+            list.appendChild(entry);
+            rank++;
+          });
+          
+        } catch (error) {
+          console.error('Error cargando leaderboard:', error);
+          document.getElementById('leaderboard-list').innerHTML = 
+            '<p style="text-align:center; color:rgba(255,255,255,0.6);">Error cargando leaderboard</p>';
+        }
+      }
+      
+      function toggleMusic() {
+        musicEnabled = !musicEnabled;
+        localStorage.setItem('bugRunnerMusic', musicEnabled);
+        updateMusicButton();
+        
+        if (backgroundMusic) {
+          if (musicEnabled) {
+            backgroundMusic.play().catch(e => console.log('No se pudo reproducir música:', e));
+          } else {
+            backgroundMusic.pause();
+          }
+        }
+      }
+      
+      function updateMusicButton() {
+        const musicIcon = document.getElementById('music-icon');
+        if (musicIcon) {
+          musicIcon.textContent = musicEnabled ? 'volume_up' : 'volume_off';
+        }
+      }
+      
+      // Inicializar al cargar
+      document.addEventListener('DOMContentLoaded', init);
+      
+      return { start, restart, saveScore, toggleMusic };
+    })();
+  </script>
+
+  <!-- Footer -->
+  <footer class="main-footer">
+    <div class="footer-content">
+      <div class="footer-logo">
+        <span class="logo-brackets">&lt;</span>
+        <span class="logo-text">dID</span>
+        <span class="logo-brackets">&gt;</span>
+      </div>
+      <div class="footer-social">
+        <a href="https://instagram.com/disenoid.udd" target="_blank" class="instagram-link">
+          <span class="material-icons">camera_alt</span>
+          @disenoid.udd
+        </a>
+      </div>
+    </div>
+    
+    <!-- Sección de Sponsors -->
+    <div class="sponsors-section">
+      <div class="sponsors-content">
+        <h3>Patrocinadores</h3>
+        <div class="sponsors-grid">
+          <div class="sponsor-item">
+            <a href="https://www.redbull.com/cl-es/" target="_blank" rel="noopener noreferrer">
+              <img src="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/Logos%2Fredbull.png?alt=media&token=5303099c-32fb-4475-ad23-90bb9641a9e5" alt="Red Bull" class="sponsor-logo">
+            </a>
+          </div>
+          <div class="sponsor-item">
+            <a href="https://www.arquipunto.cl/" target="_blank" rel="noopener noreferrer">
+              <img src="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/Logos%2Farquipunto.png?alt=media&token=38121575-4549-4161-8089-85f97dfdb3e7" alt="Arquipunto" class="sponsor-logo">
+            </a>
+          </div>
+          <div class="sponsor-item">
+            <a href="https://www.mechatronicstore.cl/" target="_blank" rel="noopener noreferrer">
+              <img src="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/Logos%2Fmechatronic.png?alt=media&token=f17a8c8a-ba4c-470f-a998-69aa2a48ed2c" alt="Mechatronic" class="sponsor-logo">
+            </a>
+          </div>
+          <div class="sponsor-item">
+            <a href="https://www.sharpie.com/" target="_blank" rel="noopener noreferrer">
+              <img src="https://firebasestorage.googleapis.com/v0/b/did-awards.firebasestorage.app/o/Logos%2Fsharpie.png?alt=media&token=26b39fca-bad2-4b3f-917c-196c629b4d9e" alt="Sharpie" class="sponsor-logo">
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
+
